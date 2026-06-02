@@ -1,0 +1,14 @@
+```json
+{
+  "name": "search_lastfm",
+  "description": "Searches Last.fm for music artist information and album metadata.",
+  "parameters": {
+    "type": "object",
+    "properties": {
+      "query": {"type": "string", "description": "The artist or album name."}
+    },
+    "required": ["query"]
+  }
+}
+
+```
