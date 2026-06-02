@@ -1,0 +1,149 @@
+To provide you with a clean, modular foundation for your **Federated Research Hub**, I have consolidated the entire project structure and the "Dual-Form" code. You can copy these files into your project folder.
+
+### 1. Folder Structure
+
+```text
+/federated_hub
+├── main.py              # FastAPI app, auto-loads plugins
+├── hub.py               # Central orchestrator
+├── plugins/             # Plugin directory
+│   ├── __init__.py      # Auto-loader
+│   ├── base.py          # Interface & Data models
+│   ├── openlibrary.py   # Implementation + Tool Def
+│   └── tmdb.py          # Implementation + Tool Def
+└── models.py            # SQL Knowledge Graph Schema
+
+```
+
+---
+
+### 2. The Core Components
+
+#### `plugins/base.py`
+
+```python
+from abc import ABC, abstractmethod
+from dataclasses import dataclass, field
+from typing import Dict, Any, List
+
+@dataclass
+class UnifiedResult:
+    canonical_id: str
+    title: str
+    entity_type: str
+    metadata: Dict[str, Any] = field(default_factory=dict)
+
+class BasePlugin(ABC):
+    name: str = "base"
+    description: str = "Base plugin"
+
+    @abstractmethod
+    def search(self, query: str) -> List[UnifiedResult]:
+        pass
+
+    def get_tool_definition(self) -> Dict[str, Any]:
+        return {
+            "name": f"search_{self.name}",
+            "description": self.description,
+            "parameters": {
+                "type": "object",
+                "properties": {"query": {"type": "string"}},
+                "required": ["query"]
+            }
+        }
+
+```
+
+#### `hub.py`
+
+```python
+class FederatedHub:
+    def __init__(self):
+        self.registry = {}
+
+    def register_plugin(self, plugin):
+        self.registry[plugin.name] = plugin
+
+    def get_all_tool_definitions(self):
+        return [p.get_tool_definition() for p in self.registry.values()]
+
+    def run_search(self, query, active_sources):
+        results = []
+        for name in active_sources:
+            if name in self.registry:
+                results.extend(self.registry[name].search(query))
+        return {r.canonical_id: r for r in results}.values()
+
+```
+
+#### `plugins/__init__.py` (The Auto-Loader)
+
+```python
+import pkgutil, importlib
+from .base import BasePlugin
+
+def load_plugins():
+    plugins = []
+    for _, name, _ in pkgutil.iter_modules(__path__):
+        if name != 'base':
+            module = importlib.import_module(f'.{name}', package=__name__)
+            class_name = "".join(p.capitalize() for p in name.split('_')) + "Plugin"
+            plugins.append(getattr(module, class_name)())
+    return plugins
+
+```
+
+---
+
+### 3. Entry Point (`main.py`)
+
+```python
+from fastapi import FastAPI
+from hub import FederatedHub
+from plugins import load_plugins
+
+app = FastAPI()
+hub = FederatedHub()
+
+for plugin in load_plugins():
+    hub.register_plugin(plugin)
+
+@app.get("/tools")
+def get_tools(): return hub.get_all_tool_definitions()
+
+@app.post("/search")
+def search(query: str, sources: list[str]): return hub.run_search(query, sources)
+
+```
+
+---
+
+### 4. Persistence Layer (`models.py`)
+
+```python
+from sqlalchemy import Column, String, ForeignKey, Table
+from sqlalchemy.orm import declarative_base, relationship
+
+Base = declarative_base()
+
+contribution = Table('contribution', Base.metadata,
+    Column('title_id', String, ForeignKey('title.id')),
+    Column('person_id', String, ForeignKey('person.id')),
+    Column('role', String)
+)
+
+class Title(Base):
+    __tablename__ = 'title'
+    id = Column(String, primary_key=True)
+    title = Column(String)
+    origin_plugin = Column(String)
+
+class Person(Base):
+    __tablename__ = 'person'
+    id = Column(String, primary_key=True)
+    name = Column(String)
+    works = relationship("Title", secondary=contribution)
+
+```
+
+This code is now fully modular, auto-loading, and ready for LLM tool calling. You can add any new source simply by dropping a new file into the `plugins/` folder that implements `BasePlugin`. **Do you need help with the SQL `session` logic to save search results, or are you ready to test this as-is?**
