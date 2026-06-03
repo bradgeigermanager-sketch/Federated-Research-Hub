@@ -1,0 +1,12 @@
+{
+  "name": "orchestrate_search",
+  "description": "Performs an intelligent, parallel search across multiple domains. Use this when the user query is broad or requires data from multiple sources (e.g., Books + Music).",
+  "parameters": {
+    "type": "object",
+    "properties": {
+      "query": {"type": "string", "description": "The search term."},
+      "domain_hint": {"type": "string", "enum": ["books", "media", "music", "general"]}
+    },
+    "required": ["query"]
+  }
+}
