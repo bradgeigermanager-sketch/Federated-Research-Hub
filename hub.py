@@ -1,8 +1,33 @@
 ```python
 class FederatedHub:
-    def __init__(self):
-        self.registry = {}
+        def __init__(self):
+        self.registry: Dict[str, BasePlugin] = {}
 
+    def register_plugin(self, plugin: BasePlugin):
+        """Adds a module to the registry for the LLM to use."""
+        self.registry[plugin.name] = plugin
+
+    def get_available_tools(self) -> Dict[str, str]:
+        """Exposes tool names/descriptions for LLM selection."""
+        return {name: p.description for name, p in self.registry.items()}
+
+    def run_search(self, query: str, active_sources: List[str]):
+        results = []
+        for name in active_sources:
+            if name in self.registry:
+                results.extend(self.registry[name].search(query))
+        return self.deduplicate(results)
+
+    def deduplicate(self, results: List[UnifiedResult]):
+        # Hash map logic to merge metadata by canonical_id
+        unique = {}
+        for r in results:
+            if r.canonical_id in unique:
+                unique[r.canonical_id].metadata.update(r.metadata)
+            else:
+                unique[r.canonical_id] = r
+        return list(unique.values())
+    
     def register_plugin(self, plugin):
         self.registry[plugin.name] = plugin
        
