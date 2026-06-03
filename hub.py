@@ -5,8 +5,29 @@ class FederatedHub:
 
     def register_plugin(self, plugin):
         self.registry[plugin.name] = plugin
-
-    def get_all_tool_definitions(self):
+       
+    def get_tool_definitions(self) -> List[Dict[str, Any]]:
+        """
+        Returns a schema for all registered plugins.
+        LLMs use this to 'see' what they can do.
+        """
+        tools = []
+        for name, plugin in self.registry.items():
+            tools.append({
+                "type": "function",
+                "function": {
+                    "name": f"search_{name}",
+                    "description": plugin.description,
+                    "parameters": {
+                        "type": "object",
+                        "properties": {
+                            "query": {"type": "string", "description": "The search term."}
+                        },
+                        "required": ["query"]
+                    }
+                }
+            })
+        return tools
         return [p.get_tool_definition() for p in self.registry.values()]
 
     def get_llm_tool_library(self) -> List[Dict]:
