@@ -1,4 +1,3 @@
-```python
 import pkgutil, importlib
 from .base import BasePlugin
 
@@ -10,5 +9,3 @@ def load_plugins():
             class_name = "".join(p.capitalize() for p in name.split('_')) + "Plugin"
             plugins.append(getattr(module, class_name)())
     return plugins
-
-```
