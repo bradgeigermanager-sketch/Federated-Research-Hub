@@ -1,0 +1,11 @@
+{
+  "name": "search_tmdb",
+  "description": "Searches for movies and television series metadata, including cast and crew details via The Movie Database (TMDB).",
+  "parameters": {
+    "type": "object",
+    "properties": {
+      "query": {"type": "string", "description": "Movie or TV show title."}
+    },
+    "required": ["query"]
+  }
+}
