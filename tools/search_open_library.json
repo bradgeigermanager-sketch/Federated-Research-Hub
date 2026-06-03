@@ -1,0 +1,11 @@
+{
+  "name": "search_open_library",
+  "description": "Use this tool to find bibliographic information about books, including titles, authors, and ISBNs, using the Open Library database.",
+  "parameters": {
+    "type": "object",
+    "properties": {
+      "query": {"type": "string", "description": "Book title or author name."}
+    },
+    "required": ["query"]
+  }
+}
