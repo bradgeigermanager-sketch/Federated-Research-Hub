@@ -1,0 +1,11 @@
+{
+  "name": "search_music_brainz",
+  "description": "Use this tool to search for music tracks, albums, artists, and record labels. Returns bibliographic music data.",
+  "parameters": {
+    "type": "object",
+    "properties": {
+      "query": {"type": "string", "description": "The search term (song, album, or artist)."}
+    },
+    "required": ["query"]
+  }
+}
