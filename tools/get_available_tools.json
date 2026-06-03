@@ -1,0 +1,8 @@
+{
+  "name": "get_available_tools",
+  "description": "Retrieves the list of all active plugins and their search capabilities. Call this first to see if you have the right tools to answer the user's request.",
+  "parameters": {
+    "type": "object",
+    "properties": {}
+  }
+}
