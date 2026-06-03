@@ -9,14 +9,10 @@ class FederatedHub:
     def get_all_tool_definitions(self):
         return [p.get_tool_definition() for p in self.registry.values()]
 
-    def run_search(self, query, active_sources):
-        results = []
-        for name in active_sources:
-            if name in self.registry:
-                results.extend(self.registry[name].search(query))
-        return {r.canonical_id: r for r in results}.values()
-    class FederatedHub:
-      
+    def get_llm_tool_library(self) -> List[Dict]:
+        """Generates the full list of tools for LLM tool-calling."""
+        return [plugin.get_tool_definition() for plugin in self.registry.values()]
+          
     def run_search(self, query: str, sources: list[str]):
         """
         The Hub acts as a router. The LLM tells us which 'sources' 
@@ -27,7 +23,7 @@ class FederatedHub:
             if source_name in self.registry:
                 # Execute the plugin search
                 results.extend(self.registry[source_name].search(query))
-        
+        return {r.canonical_id: r for r in results}.values()
         return self.deduplicate(results)
         
 import concurrent.futures
