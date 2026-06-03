@@ -1,0 +1,19 @@
+{
+  "name": "execute_federated_search",
+  "description": "Performs a cross-source search across selected plugins. Use this to find books, movies, or music based on user queries.",
+  "parameters": {
+    "type": "object",
+    "properties": {
+      "query": {
+        "type": "string",
+        "description": "The search term (e.g., 'The Great Gatsby' or 'Inception')."
+      },
+      "sources": {
+        "type": "array",
+        "items": { "type": "string" },
+        "description": "The list of plugin names to query (e.g., ['open_library', 'tmdb'])."
+      }
+    },
+    "required": ["query", "sources"]
+  }
+}
